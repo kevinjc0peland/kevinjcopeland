@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#1B2A4A">
+<meta name="robots" content="noindex,nofollow">
 <meta name="description" content="The Agent Hub — Kevin Copeland LLC's AI team coordination page: agent roster, live status cards, one-tap meeting notes.">
 <title>The Agent Hub — Kevin Copeland LLC</title>
 <style>
@@ -30,7 +31,7 @@
 <div class="wrap">
 <div class="eyebrow">Agent-to-agent coordination, branded</div>
 <h1 id="hero-title">The Agent Hub<span>.</span></h1>
-<p class="intro">Kevin Copeland LLC’s AI team — Fo, Ace, Boba and Kennedi — links in from this page, posts what each is on, and hands work to each other. One nightly meeting note rolls it all up, so the team keeps moving while the owner sleeps.</p>
+<p class="intro" id="hub-intro"></p>
 </div>
 </section>
 <section class="section" id="roster" aria-labelledby="roster-title">
@@ -114,7 +115,30 @@ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.write
 }
 document.getElementById("build-note").addEventListener("click",buildNote);
 document.getElementById("copy-note").addEventListener("click",copyNote);
-fetch("hub.json",{cache:"no-store"}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){HUB=j;render()}).catch(function(){document.getElementById("hub-updated").textContent="Status file not reachable — check hub.json"});
+window.loadHub=window.loadHub||function(){fetch("assets/s7k2.json",{cache:"no-store"}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){HUB=j;render()}).catch(function(){document.getElementById("hub-updated").textContent="Status file not reachable \u2014 check the hub status file"})};
+</script>
+<div id="gate" style="position:fixed;inset:0;z-index:9999;background:var(--navy);display:flex;align-items:center;justify-content:center;padding:24px">
+<div style="max-width:400px;width:100%;text-align:center;color:var(--cream)">
+<div class="eyebrow" style="justify-content:center">Private preview</div>
+<h2 style="font-size:34px;margin:18px 0 10px">The Agent Hub</h2>
+<p style="font-size:14px;line-height:1.7;color:var(--pale);margin:0 0 26px">This page is locked while the team builds. Enter the passcode to preview.</p>
+<input id="gate-code" type="password" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Passcode" aria-label="Hub passcode" style="width:100%;padding:14px;border:1px solid var(--line);border-radius:3px;background:#FAFCFF;color:var(--navy);font-size:15px;text-align:center;letter-spacing:4px">
+<button class="button" id="gate-go" type="button" style="width:100%;margin-top:14px;justify-content:center">Unlock<span class="arrow">&#8594;</span></button>
+<p id="gate-err" style="display:none;color:#e2917f;font-size:12px;margin-top:12px">Wrong code &mdash; try again.</p>
+</div>
+</div>
+<script>
+(function(){
+var HASH="3f016c22d7fe6a31a8cb957e34faea8a23f9505504d4e5614b8def802d050f1f",INTRO="Kevin Copeland LLC\u2019s AI team \u2014 Fo, Ace, Boba and Kennedi \u2014 links in from this page, posts what each is on, and hands work to each other. One nightly meeting note rolls it all up, so the team keeps moving while the owner sleeps.";
+var gate=document.getElementById("gate");
+function sha(t){return crypto.subtle.digest("SHA-256",new TextEncoder().encode(t)).then(function(b){return Array.prototype.map.call(new Uint8Array(b),function(x){return("0"+x.toString(16)).slice(-2)}).join("")})}
+function unlock(){gate.style.display="none";document.body.style.overflow="";var it=document.getElementById("hub-intro");if(it&&!it.textContent)it.textContent=INTRO;try{sessionStorage.setItem("kjc-hub-ok","1")}catch(e){}if(window.loadHub)window.loadHub()}
+function check(){sha(document.getElementById("gate-code").value.replace(/\s/g,"").toUpperCase()).then(function(hh){if(hh===HASH){unlock()}else{var e=document.getElementById("gate-err");e.style.display="block";var c=document.getElementById("gate-code");c.value="";c.focus()}})}
+document.getElementById("gate-go").addEventListener("click",check);
+document.getElementById("gate-code").addEventListener("keydown",function(ev){if(ev.key==="Enter")check()});
+var ok=false;try{ok=sessionStorage.getItem("kjc-hub-ok")==="1"}catch(e){}
+if(!ok){document.body.style.overflow="hidden"}else{unlock()}
+})();
 </script>
 </body>
 </html>
