@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer"><title>Kevin's edit machine — 30 for 30</title><style>
+:root{--navy:#1B2A4A;--blue:#4B9CD3;--cream:#F7F4EC}*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--navy);font:18px/1.6 Arial,sans-serif}main{max-width:1120px;margin:auto;padding:36px 24px}header{background:var(--navy);color:var(--cream);padding:38px;border-radius:16px}h1,h2,h3{font-family:Georgia,serif;font-weight:bold;line-height:1.15}h1{font-size:clamp(36px,6vw,62px);margin:12px 0}h2{font-size:28px}p{max-width:850px}.eyebrow{color:#91cbed;letter-spacing:2px;font-size:13px;font-weight:bold;text-transform:uppercase}section{background:#fff;border:1px solid #cad4de;border-radius:12px;padding:26px;margin-top:22px}button,.download{font:bold 17px Arial,sans-serif;background:var(--navy);color:#fff;border:0;border-radius:7px;padding:14px 20px;cursor:pointer;display:inline-block;text-decoration:none}button.secondary{background:#e2eff8;color:var(--navy)}button:disabled{opacity:.5;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--blue);outline-offset:3px}label{font-weight:bold;display:block;margin:10px 0}input,select{font:16px/1.5 Arial,sans-serif;width:100%;padding:12px;border:1px solid #8b9aaa;border-radius:6px}video{max-width:100%;max-height:430px;display:block;margin:12px auto}small,.muted{font-size:15px;color:#4d5d70}.actions{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0}.status{padding:12px 16px;background:#e2eff8;border-left:4px solid var(--blue);margin:16px 0}.error{color:#9a2525;white-space:pre-wrap}.row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.flags{list-style:none;padding:0;margin:8px 0}.flags li{padding:8px 12px;border-left:4px solid var(--blue);background:#f2f7fb;margin:6px 0}#transcript{white-space:pre-wrap;font:15px/1.6 Georgia,serif;max-height:240px;overflow:auto;background:#f7f7f2;border:1px solid #dae1e8;border-radius:8px;padding:14px}#logs{font:13px monospace;white-space:pre-wrap;max-height:190px;overflow:auto}progress{width:100%;accent-color:var(--blue)}footer{padding:20px 0;font-size:14px}@media(max-width:720px){.row{grid-template-columns:1fr}main{padding:18px 12px}header,section{padding:22px}}
+@font-face{font-family:Studio0;font-weight:900;src:url('https://cdn.jsdelivr.net/fontsource/fonts/montserrat@latest/latin-900-normal.ttf') format('truetype');font-display:swap}
+@font-face{font-family:Studio1;font-weight:400;src:url('https://cdn.jsdelivr.net/fontsource/fonts/anton@latest/latin-400-normal.ttf') format('truetype');font-display:swap}
+@font-face{font-family:Studio2;font-weight:400;src:url('https://cdn.jsdelivr.net/fontsource/fonts/archivo-black@latest/latin-400-normal.ttf') format('truetype');font-display:swap}
+@font-face{font-family:Studio3;font-weight:400;src:url('https://cdn.jsdelivr.net/fontsource/fonts/bebas-neue@latest/latin-400-normal.ttf') format('truetype');font-display:swap}
+@font-face{font-family:Studio4;font-weight:700;src:url('https://cdn.jsdelivr.net/fontsource/fonts/poppins@latest/latin-700-normal.ttf') format('truetype');font-display:swap}
+@font-face{font-family:Studio5;font-weight:700;src:url('https://cdn.jsdelivr.net/fontsource/fonts/oswald@latest/latin-700-normal.ttf') format('truetype');font-display:swap}
+@font-face{font-family:Studio6;font-weight:700;src:url('https://cdn.jsdelivr.net/fontsource/fonts/lexend@latest/latin-700-normal.ttf') format('truetype');font-display:swap}
+@font-face{font-family:Studio7;font-weight:800;src:url('https://cdn.jsdelivr.net/fontsource/fonts/manrope@latest/latin-800-normal.ttf') format('truetype');font-display:swap}
+@font-face{font-family:Studio8;font-weight:700;src:url('https://cdn.jsdelivr.net/fontsource/fonts/space-grotesk@latest/latin-700-normal.ttf') format('truetype');font-display:swap}
+</style></head><body><main>
+<header>
+<div class="eyebrow">Kevin Copeland · 30 for 30 · the edit machine</div>
+<h1>The edit machine</h1>
+<p>Drop in a raw talking-head take. The machine reads every word, trims the dead air, captions every spoken word in brand style, puts the all-caps header line on the open, and hard-cuts on the last word. One clean vertical file out. No subscription, no app.</p>
+<p>First run downloads the speech model, about 40 MB, once per browser. Everything runs in this tab; nothing uploads. Back to the <a href="clip-studio.html" style="color:#91cbed">clip studio</a>.</p>
+</header>
+<div class="status">Local processing, not a private login: this unlisted page is accessible to anyone with its URL. Video, audio and captions stay in this tab; nothing is uploaded. Engine and model code download from a CDN.</div>
+
+<section><h2>1. Choose your video</h2>
+<label for="source">MP4 or MOV from your computer</label>
+<input type="file" id="source" accept="video/mp4,video/quicktime,.mp4,.mov">
+<p id="fileInfo" class="muted">A raw talking-head take works best: one camera, one voice, minimal music.</p>
+<video id="preview" controls playsinline></video>
+</section>
+
+<section><h2>2. The header line (the open)</h2>
+<p class="muted">Optional. Composed as DAY | SERIES | TITLE, all caps, held over the first 2.5 seconds like the episode card.</p>
+<div class="row">
+<div><label for="hDay">Day</label><input id="hDay" placeholder="DAY 23" maxlength="40"></div>
+<div><label for="hSeries">Series tag</label><input id="hSeries" placeholder="MORNING MOMENTUM" maxlength="60"></div>
+<div><label for="hTitle">Title</label><input id="hTitle" placeholder="BUILD YOUR OWN TABLE" maxlength="120"></div>
+</div></section>
+
+<section><h2>3. Machine settings</h2>
+<div class="row">
+<div><label for="pauseCut">Cut pauses longer than (seconds)</label><input id="pauseCut" type="number" min="0.3" max="3" step="0.1" value="0.8"></div>
+<div><label for="keepPause">Keep this much pause (seconds)</label><input id="keepPause" type="number" min="0.1" max="1.5" step="0.05" value="0.35"></div>
+<div><label for="beatSize">Words per caption beat</label><select id="beatSize"><option>2</option><option selected>3</option><option>4</option></select></div>
+</div>
+<label for="popWords">Words that pop in Carolina blue (comma separated, optional)</label>
+<input id="popWords" placeholder="table, guard, doorway">
+<label for="font">Caption font</label>
+<select id="font">
+<option value="0" style="font-family:Studio0">Montserrat Black</option>
+<option value="1" style="font-family:Studio1">Anton</option>
+<option value="2" style="font-family:Studio2">Archivo Black</option>
+<option value="3" style="font-family:Studio3">Bebas Neue</option>
+<option value="4" style="font-family:Studio4">Poppins Bold</option>
+<option value="5" style="font-family:Studio5">Oswald</option>
+<option value="6" style="font-family:Studio6">Lexend Bold</option>
+<option value="7" style="font-family:Studio7">Manrope ExtraBold</option>
+<option value="8" style="font-family:Studio8">Space Grotesk Bold</option>
+<option value="-1">Arial (classic)</option>
+</select>
+<label for="res">Export size</label>
+<select id="res"><option value="720" selected>720 × 1280 (fast, the studio standard)</option><option value="1080">1080 × 1920 (slower, heavier on memory)</option></select>
+</section>
+
+<section><h2>4. Read the tape</h2>
+<div id="errors" class="error" role="alert"></div>
+<div class="actions"><button id="read">Read the tape</button><button id="check" class="secondary">Run engine check</button></div>
+<p id="readState" class="status" role="status" aria-live="polite">Ready when you are.</p>
+<div id="report" hidden>
+<h3>Transcript</h3><div id="transcript"></div>
+<h3>The trim plan</h3><p id="planStats" class="muted"></p>
+<h3>Pace check (flat stretches)</h3><ul id="flags" class="flags"></ul><p id="paceNote" class="muted"></p>
+</div>
+</section>
+
+<section><h2>5. Cut and caption</h2>
+<div class="actions"><button id="cut" disabled>Cut and caption</button><button id="cancel" class="secondary" disabled>Stop</button></div>
+<progress id="bar" max="1" value="0"></progress>
+<div id="result"></div>
+<details><summary>Engine details</summary><pre id="logs"></pre></details>
+</section>
+
+<footer><strong>V1 notes:</strong> Word-level transcription runs locally (a quantized Whisper tiny English model). Pauses longer than the cut threshold shrink to the keep amount; cuts never touch a word; timestamps remap to the trimmed timeline. Captions burn as 2–4 word beats, big bold white with a navy outline, Carolina blue on your pop words, in the lower third; the header line sits at the top for 2.5 seconds. The video ends on the last spoken word with a hard cut, no outro card. Export is 720 × 1280 or 1080 × 1920, 30 fps, H.264 with AAC. The speech model runs on your device: a quiet computer takes roughly a minute per minute of tape, and you should check the transcript before cutting. Music or heavy background noise throws off word timing. Nothing is saved between visits. Use current desktop Chrome or Edge; a long tape at 1080 can exceed browser memory. MOV codecs vary; an unsupported source shows an error. Files over 500 MB are blocked.</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+<script src="edit-machine.model.js" type="module"></script>
+<script src="edit-machine.core.js"></script>
+<script src="edit-machine.ui.js"></script>
+</body></html>
