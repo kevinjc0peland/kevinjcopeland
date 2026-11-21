@@ -1,7 +1,10 @@
 window.loadTranscriber = async (onProgress) => {
   const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1');
   env.allowLocalModels = false;
-  const make = (id) => pipeline('automatic-speech-recognition', id, { dtype: 'q8', progress_callback: onProgress });
-  try { return await make('onnx-community/whisper-tiny.en'); }
-  catch (e) { return await make('Xenova/whisper-tiny.en'); }
+  return await pipeline('automatic-speech-recognition',
+    'onnx-community/whisper-tiny.en_timestamped', {
+      dtype: 'q8',
+      device: 'wasm',
+      progress_callback: onProgress
+    });
 };
