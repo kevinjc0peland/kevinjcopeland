@@ -45,12 +45,14 @@ label{display:block; font-size:11px; font-weight:600; text-transform:uppercase; 
 label:first-child{margin-top:0;}
 input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{width:100%; padding:11px 12px; font-size:15px; font-family:inherit; border:1.5px solid #C9D3DE; border-radius:8px; background:#FAFCFF; color:var(--navy);}
 input:focus,select:focus,textarea:focus{outline:none; border-color:var(--carolina);}
+input.filled{border-color:var(--carolina); background:#EFF7FD;}
 .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
 .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
 .btn{display:inline-block; padding:13px 20px; font-size:13px; font-weight:800; background:var(--carolina); color:var(--navy); border:none; border-radius:8px; cursor:pointer; text-transform:uppercase; letter-spacing:1px; font-family:inherit;}
 .btn:hover{filter:brightness(1.07);}
 .btn.ghost{background:none; border:1.5px solid var(--carolina); color:#2F6E9E;}
 .btn.small{padding:8px 12px; font-size:11px;}
+#zipBtn{padding:0 14px; white-space:nowrap;}
 #shotBox{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;}
 #shotBox img{height:86px; border-radius:6px; border:1px solid #C9D3DE; cursor:pointer;}
 .drop{border:2px dashed #B9C6D4; border-radius:10px; padding:18px; text-align:center; font-size:12px; color:#5A6B80; margin-top:6px; background:#FAFCFF;}
@@ -137,8 +139,21 @@ tr:last-child td{border-bottom:none;}
           </div>
         </div>
       </div>
-      <label>Pickup — where did you pick up from?</label>
-      <input type="text" id="f-pickup" placeholder="Store / address">
+      <label>Business name — who did you pick up from?</label>
+      <input type="text" id="f-biz" placeholder="e.g. Wendy's">
+      <div class="row2">
+        <div>
+          <label>Street address</label>
+          <input type="text" id="f-addr" placeholder="street number and name">
+        </div>
+        <div>
+          <label>ZIP code</label>
+          <div style="display:flex; gap:6px;">
+            <input type="text" id="f-zip" inputmode="numeric" maxlength="10" placeholder="don't know? tap Find">
+            <button class="btn ghost small" id="zipBtn" type="button">Find</button>
+          </div>
+        </div>
+      </div>
       <label>Notes</label>
       <input type="text" id="f-notes" placeholder="optional">
       <label>Screenshots (optional — upload what you're looking at)</label>
@@ -192,7 +207,7 @@ tr:last-child td{border-bottom:none;}
       <button class="btn ghost small" id="jsonBtn">Backup JSON</button>
       <span style="font-size:11px; color:#5A6B80; align-self:center;" id="countLbl"></span>
     </div>
-    <div class="tblwrap"><table id="allTbl"><thead><tr><th>Date</th><th>Platform</th><th>Earned</th><th>Miles</th><th>Hours</th><th>Pickup</th><th></th></tr></thead><tbody></tbody></table></div>
+    <div class="tblwrap"><table id="allTbl"><thead><tr><th>Date</th><th>Platform</th><th>Earned</th><th>Miles</th><th>Hours</th><th>Business</th><th></th></tr></thead><tbody></tbody></table></div>
     <div class="note">Everything lives in this browser on this device. Export a CSV or JSON backup now and then so the numbers are never trapped in one phone.</div>
   </section>
 </main>
@@ -265,26 +280,75 @@ function drawShots(){$('shotBox').innerHTML='';shots.forEach((s,i)=>{const im=ne
 function zoom(s){$('lbImg').src=s;$('lightbox').style.display='flex';}
 $('lightbox').onclick=()=>$('lightbox').style.display='none';
 
-/* ---------- OCR assist (best effort, you confirm) ---------- */
+/* ---------- ZIP lookup (from the street address) ---------- */
+$('zipBtn').onclick=async()=>{
+  const q=[$('f-addr').value.trim(),$('f-biz').value.trim()].filter(Boolean).join(', ');
+  if(!q){$('oStatus').textContent='Put the street address in first — the zip comes from it.';return;}
+  $('oStatus').textContent='Looking up the zip…';
+  try{
+    const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&countrycodes=us&q='+encodeURIComponent(q));
+    const j=await r.json();
+    const zc=j&&j[0]&&j[0].address&&j[0].address.postcode;
+    if(zc){$('f-zip').value=zc;$('f-zip').classList.add('filled');$('oStatus').textContent='Zip found: '+zc+' — give it a quick look to be sure.';}
+    else $('oStatus').textContent='No zip found for that one. Type it in.';
+  }catch(e){$('oStatus').textContent='The zip lookup did not land. Type it in.';}
+};
+
+/* ---------- OCR assist (reads every shot, earnings line first — you confirm) ---------- */
+function prep(src){return new Promise(res=>{const img=new Image();img.onload=()=>{
+  const M=1800;let s=M/Math.max(img.width,img.height);if(s>2)s=2;if(s<1)s=1;
+  const c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
+  const x=c.getContext('2d');x.drawImage(img,0,0,c.width,c.height);
+  const d=x.getImageData(0,0,c.width,c.height),p=d.data;
+  let mn=255,mx=0;
+  for(let i=0;i<p.length;i+=4){const g=(p[i]*.299+p[i+1]*.587+p[i+2]*.114)|0;p[i]=p[i+1]=p[i+2]=g;if(g<mn)mn=g;if(g>mx)mx=g;}
+  const span=Math.max(1,mx-mn);
+  for(let i=0;i<p.length;i+=4){const g=Math.max(0,Math.min(255,((p[i]-mn)*255/span)|0));p[i]=p[i+1]=p[i+2]=g;}
+  x.putImageData(d,0,0);
+  res(c.toDataURL('image/png'));
+};img.src=src;});}
+
 $('ocrBtn').onclick=async()=>{
   if(!shots.length){$('oStatus').textContent='Add a screenshot first.';return;}
   $('oStatus').textContent='Reading the screenshot…';
   try{
-    const r=await Tesseract.recognize(shots[0],'eng');
-    const t=r.data.text.replace(/,/g,'');
-    const mMoney=t.match(/\$\s?(\d+(?:\.\d{1,2})?)/)||t.match(/(\d{1,4}\.\d{2})\b/);
-    const mMiles=t.match(/(\d+(?:\.\d)?)\s?mi(?:le)?s?\b/i);
-    if(mMoney)$('f-earn').value=mMoney[1];
-    if(mMiles)$('f-miles').value=mMiles[1];
-    $('oStatus').textContent=mMoney||mMiles?'Check these against the screenshot before saving.':'Could not pull numbers off that one — type them in.';
+    let text='';
+    try{
+      const w=await Tesseract.createWorker('eng');
+      await w.setParameters({tessedit_pageseg_mode:'6'});
+      for(const s of shots){const r=await w.recognize(await prep(s));text+='\n'+r.data.text;}
+      await w.terminate();
+    }catch(e2){
+      for(const s of shots){const r=await Tesseract.recognize(await prep(s),'eng');text+='\n'+r.data.text;}
+    }
+    const lines=text.split(/\n+/).map(l=>l.trim()).filter(Boolean);
+    const kw=/(earn|total|payout|pay|tip|amount|net|gross)/i;
+    const dollarRe=/\$\s?(\d{1,5}(?:\.\d{1,2})?)/g, bareRe=/\b(\d{1,4}\.\d{2})\b/g;
+    let cands=[];
+    lines.forEach(l=>{
+      const k=kw.test(l)?1:0;
+      let m;const dr=new RegExp(dollarRe.source,'g');
+      while((m=dr.exec(l))!==null)cands.push({v:parseFloat(m[1]),p:2+k});
+      if(l.indexOf('$')===-1&&!/mi(le)?s?\b/i.test(l)){const br=new RegExp(bareRe.source,'g');
+        while((m=br.exec(l))!==null)cands.push({v:parseFloat(m[1]),p:1+k});}
+    });
+    cands.sort((a,b)=>b.p-a.p);
+    const mMoney=cands.length?cands[0].v:null;
+    const mMiles=text.match(/(\d+(?:\.\d)?)\s?mi(?:le)?s?\b/i);
+    ['f-earn','f-miles'].forEach(i=>$(i).classList.remove('filled'));
+    if(mMoney!=null){$('f-earn').value=mMoney.toFixed(2);$('f-earn').classList.add('filled');}
+    if(mMiles){$('f-miles').value=mMiles[1];$('f-miles').classList.add('filled');}
+    $('oStatus').textContent=(mMoney!=null||mMiles)
+      ?('Read off the screenshot'+(mMoney!=null?' — earned '+money(mMoney):'')+(mMiles?' — '+mMiles[1]+' mi':'')+'. Check both against the shot before saving.')
+      :'Could not pull numbers off that one — type them in.';
   }catch(e){$('oStatus').textContent='The read did not land. Type the numbers in — takes ten seconds.';}
 };
 
 /* ---------- save / edit ---------- */
-function resetForm(){['f-earn','f-miles','f-pickup','f-notes','f-start','f-end'].forEach(i=>$(i).value='');shots=[];drawShots();editId=null;$('saveBtn').textContent='Save job';$('clearBtn').style.display='none';$('editNote').textContent='';$('oStatus').textContent='';}
+function resetForm(){['f-earn','f-miles','f-biz','f-addr','f-zip','f-notes','f-start','f-end'].forEach(i=>$(i).value='');['f-earn','f-miles'].forEach(i=>$(i).classList.remove('filled'));shots=[];drawShots();editId=null;$('saveBtn').textContent='Save job';$('clearBtn').style.display='none';$('editNote').textContent='';$('oStatus').textContent='';}
 $('clearBtn').onclick=resetForm;
 $('saveBtn').onclick=async()=>{
-  const e={date:$('f-date').value||todayStr(),platform:$('f-pf').value,earn:num($('f-earn').value),miles:num($('f-miles').value),start:$('f-start').value||null,end:$('f-end').value||null,pickup:$('f-pickup').value.trim(),notes:$('f-notes').value.trim(),shots:shots,created:Date.now()};
+  const e={date:$('f-date').value||todayStr(),platform:$('f-pf').value,earn:num($('f-earn').value),miles:num($('f-miles').value),start:$('f-start').value||null,end:$('f-end').value||null,biz:$('f-biz').value.trim(),addr:$('f-addr').value.trim(),zip:$('f-zip').value.trim(),notes:$('f-notes').value.trim(),shots:shots,created:Date.now()};
   if(e.earn==null&&e.miles==null){$('oStatus').textContent='Give me at least an amount or the miles.';return;}
   if(editId)e.id=editId; else e.id=Date.now()+Math.floor(Math.random()*1000);
   await putEntry(e); resetForm(); $('f-date').value=e.date; render();
@@ -296,16 +360,17 @@ function sum(list){const t={jobs:list.length,earn:0,miles:0,hrs:0};const by={};
  list.forEach(e=>{t.earn+=e.earn||0;t.miles+=e.miles||0;t.hrs+=hrs(e)||0;by[e.platform]=(by[e.platform]||0)+((e.earn||0))+(e.miles||0?0:0);});
  t.by=by;return t;}
 function byLine(by){return Object.entries(by).map(([k,v])=>k).join(' · ')||'none';}
+function whereLine(e){return e.biz?(e.addr?e.biz+' — '+e.addr+(e.zip?', '+e.zip:''):e.biz):(e.pickup?'pickup: '+e.pickup:null);}
 function entryCard(e,showDate){
   const h=hrs(e);
   return '<div class="entry"><div class="top"><span class="pf">'+e.platform+(showDate?' · '+fmtDay(e.date):'')+'</span><span class="amt">'+money(e.earn)+'</span></div>'+
-  '<div class="meta">'+[e.miles!=null?e.miles+' mi':null,h?h.toFixed(1)+' hrs':null,e.pickup?'pickup: '+e.pickup:null,e.notes].filter(Boolean).join(' · ')+'</div>'+
+  '<div class="meta">'+[e.miles!=null?e.miles+' mi':null,h?h.toFixed(1)+' hrs':null,whereLine(e),e.notes].filter(Boolean).join(' · ')+'</div>'+
   (e.shots&&e.shots.length?'<div class="shots">'+e.shots.map(s=>'<img src="'+s+'" onclick="zoom(this.src)">').join('')+'</div>':'')+
   '<div class="acts"><button class="btn ghost small" onclick="editEntry('+e.id+')">Edit</button><button class="btn ghost small" onclick="killEntry('+e.id+')">Delete</button></div></div>';
 }
 async function editEntry(id){const list=await allEntries();const e=list.find(x=>x.id===id);if(!e)return;
  editId=id;$('f-date').value=e.date;$('f-pf').value=e.platform;$('f-earn').value=e.earn??'';$('f-miles').value=e.miles??'';
- $('f-start').value=e.start||'';$('f-end').value=e.end||'';$('f-pickup').value=e.pickup||'';$('f-notes').value=e.notes||'';
+ $('f-start').value=e.start||'';$('f-end').value=e.end||'';$('f-biz').value=e.biz||'';$('f-addr').value=e.addr||'';$('f-zip').value=e.zip||'';$('f-notes').value=e.notes||'';
  shots=(e.shots||[]).slice();drawShots();$('saveBtn').textContent='Save changes';$('clearBtn').style.display='inline-block';$('editNote').textContent='Editing a saved job. Save changes or cancel.';
  document.querySelector('nav button[data-v=log]').click();}
 async function killEntry(id){if(!confirm('Delete this job? The numbers come off the tallies with it.'))return;await delEntry(id);render();}
@@ -323,7 +388,7 @@ function render(){
     $('todayBy').textContent=byLine(dt.by);
     const dlist=list.filter(e=>e.date===t);
     $('todayList').innerHTML=dlist.length?dlist.map(e=>entryCard(e)).join(''):'<div class="empty">Nothing logged today yet. First job of the day goes in the Log a job tab.</div>';
-    let rep='EOD REPORT — '+fmtDay(t)+'\nJobs: '+dt.jobs+'  Earned: '+money(dt.earn)+'  Miles: '+dt.miles.toFixed(1)+'  Hours: '+dt.hrs.toFixed(1)+'\n'+dlist.map(e=>'· '+e.platform+' — '+(e.earn!=null?money(e.earn):'—')+(e.miles!=null?', '+e.miles+' mi':'')+(hrs(e)?', '+hrs(e).toFixed(1)+' h':'')+(e.pickup?' (pickup '+e.pickup+')':'')).join('\n');
+    let rep='EOD REPORT — '+fmtDay(t)+'\nJobs: '+dt.jobs+'  Earned: '+money(dt.earn)+'  Miles: '+dt.miles.toFixed(1)+'  Hours: '+dt.hrs.toFixed(1)+'\n'+dlist.map(e=>'· '+e.platform+' — '+(e.earn!=null?money(e.earn):'—')+(e.miles!=null?', '+e.miles+' mi':'')+(hrs(e)?', '+hrs(e).toFixed(1)+' h':'')+(whereLine(e)?' ('+whereLine(e)+')':'')).join('\n');
     $('copyEod').onclick=()=>{navigator.clipboard.writeText(rep);$('copyEod').textContent='Copied';setTimeout(()=>$('copyEod').textContent='Copy report',1500);};
     /* month */
     if(!$('mPick').value)$('mPick').value=t.slice(0,7);
@@ -346,7 +411,7 @@ function render(){
     $('countLbl').textContent=list.length+' jobs on file';
     const ab=$('allTbl').querySelector('tbody');ab.innerHTML='';
     list.slice(0,200).forEach(e=>{const tr=document.createElement('tr');
-      tr.innerHTML='<td>'+e.date+'</td><td>'+e.platform+'</td><td>'+(e.earn!=null?money(e.earn):'—')+'</td><td>'+(e.miles!=null?e.miles:'—')+'</td><td>'+(hrs(e)?hrs(e).toFixed(1):'—')+'</td><td>'+(e.pickup||'')+'</td><td><button class="btn ghost small" onclick="editEntry('+e.id+')">Edit</button></td>';ab.append(tr);});
+      tr.innerHTML='<td>'+e.date+'</td><td>'+e.platform+'</td><td>'+(e.earn!=null?money(e.earn):'—')+'</td><td>'+(e.miles!=null?e.miles:'—')+'</td><td>'+(hrs(e)?hrs(e).toFixed(1):'—')+'</td><td>'+(e.biz||e.pickup||'')+'</td><td><button class="btn ghost small" onclick="editEntry('+e.id+')">Edit</button></td>';ab.append(tr);});
     if(!list.length)ab.innerHTML='<tr><td colspan="7" style="color:#5A6B80">No jobs on file yet.</td></tr>';
   });
 }
@@ -355,9 +420,9 @@ $('mPick').onchange=render;$('yPick').onchange=render;
 /* ---------- export ---------- */
 function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type}));a.download=name;a.click();}
 $('csvBtn').onclick=async()=>{const list=await allEntries();list.sort((a,b)=>a.date.localeCompare(b.date));
- let c='date,platform,earned,miles,start,end,hours,pickup,notes\n';
+ let c='date,platform,earned,miles,start,end,hours,business,street,zip,notes\n';
  list.forEach(e=>{const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
-  c+=[e.date,q(e.platform),e.earn??'',e.miles??'',e.start||'',e.end||'',hrs(e)?hrs(e).toFixed(2):'',q(e.pickup),q(e.notes)].join(',')+'\n';});
+  c+=[e.date,q(e.platform),e.earn??'',e.miles??'',e.start||'',e.end||'',hrs(e)?hrs(e).toFixed(2):'',q(e.biz),q(e.addr),q(e.zip),q(e.notes)].join(',')+'\n';});
  dl('gig-ledger-'+todayStr()+'.csv',c,'text/csv');};
 $('jsonBtn').onclick=async()=>{const list=await allEntries();dl('gig-ledger-backup-'+todayStr()+'.json',JSON.stringify(list,null,1),'application/json');};
 
