@@ -88,6 +88,7 @@ tr:last-child td{border-bottom:none;}
 .lk span{font-size:11.5px; color:#5A6B80;}
 .lk:hover{border-color:var(--carolina);}
 #printSheet{display:none; font-family:Georgia,serif; color:#111; font-size:12.5pt; line-height:1.6; max-width:7.5in; margin:0 auto; padding:.4in 0; white-space:pre-wrap;}
+#printSheet img{width:100%; display:block; margin:14px 0; page-break-inside:avoid;}
 @media print{
   body{background:#fff;}
   #gate,header,main,#lightbox{display:none !important;}
@@ -204,6 +205,7 @@ tr:last-child td{border-bottom:none;}
       <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
         <button class="btn ghost small" id="genBtn">Draft the letter</button>
         <button class="btn small" id="printBtn">Print / save as PDF</button>
+        <button class="btn small" id="packetBtn">Print letter + screenshots</button>
       </div>
       <div id="oStatus2" style="font-size:12px; color:#2F6E9E; min-height:16px; margin-top:8px;"></div>
       <label>The letter (edit every line before it prints)</label>
@@ -216,11 +218,11 @@ tr:last-child td{border-bottom:none;}
     <div class="card">
       <label style="margin-top:0">Getting it out by certified mail</label>
       <div class="step"><span class="n">1</span><span>Print the letter from the Letter tab and sign it above your name.</span></div>
-      <div class="step"><span class="n">2</span><span>Print or copy your screenshots and anything else you are enclosing. Keep a full copy of the whole packet for your own file.</span></div>
+      <div class="step"><span class="n">2</span><span>Print or copy your screenshots and anything else you are enclosing. The Print letter + screenshots button lays the whole packet out in one go. Keep a full copy of everything for your own file.</span></div>
       <div class="step"><span class="n">3</span><span>At the post office, ask for Certified Mail with Return Receipt, so you get the green card or an electronic signature back as proof it landed and who signed for it.</span></div>
       <div class="step"><span class="n">4</span><span>The clerk fills the certified slip with the recipient address, sticks it on the envelope, and hands you the receipt. Keep the receipt, it carries the tracking number.</span></div>
       <div class="step"><span class="n">5</span><span>When the green card comes back, staple it to your copy of the letter. That pairing is your proof of service.</span></div>
-      <div class="step"><span class="n">6</span><span>Put the tracking number on the case here: edit the newest record for that party and drop it in the notes.</span></div>
+      <div class="step"><span class="n">6</span><span>Put the tracking number on the case here: edit the newest record for that party and drop it in the summary.</span></div>
       <div class="note">Postage and the certified fee are paid at the counter. Nothing on this page charges you anything.</div>
     </div>
     <div class="card">
@@ -286,6 +288,7 @@ let shots=[], editId=null;
 const $=id=>document.getElementById(id);
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function fmtDay(s){const[y,m,d]=s.split('-');return new Date(y,m-1,d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}
+function fmtLong(s){const[y,m,d]=s.split('-');return new Date(y,m-1,d).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});}
 
 /* ---------- tabs ---------- */
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
@@ -401,30 +404,42 @@ async function genLetter(){
   fillPartySelect(list);
   const pv=$('l-party').value;
   const party=pv==='__manual'?($('l-rname').value.trim()||'the recipient'):pv;
+  const pShow=party.replace(/\.+\s*$/,'');
   const rows=list.filter(e=>e.party===party).sort((a,b)=>a.date.localeCompare(b.date));
   const rec=rows.map((r,i)=>{
-    let line=(i+1)+'. '+fmtDay(r.date)+' ('+r.channel+(r.who?', speaking with '+r.who:'')+') '+(r.summary||r.text||'').replace(/\s*\n\s*/g,' ').trim();
+    let line=(i+1)+'. '+fmtLong(r.date)+' ('+r.channel+(r.who?', speaking with '+r.who:'')+') '+(r.summary||r.text||'').replace(/\s*\n\s*/g,' ').trim();
     if(r.want)line+=' Resolution sought: '+r.want+'.';
     return line;
   }).join('\n\n');
   const nShots=rows.reduce((n,r)=>n+((r.shots||[]).length),0);
-  const first=rows.length?fmtDay(rows[0].date):'', last=rows.length?fmtDay(rows[rows.length-1].date):'';
-  const span=rows.length>1?first+' through '+last:(first||'(date range)');
+  const firstD=rows.length?rows[0].date:'', lastD=rows.length?rows[rows.length-1].date:'';
+  const span=rows.length>1?(fmtLong(firstD)+' through '+fmtLong(lastD)):(firstD?fmtLong(firstD):'(date range)');
   const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   let L='Kevin Copeland LLC\n4870 Sadler Road, Ste 300\nGlen Allen, VA 23060\n\n'+today+'\n\n';
   if($('l-rname').value.trim())L+=$('l-rname').value.trim()+'\n';
   if($('l-raddr').value.trim())L+=$('l-raddr').value.trim()+'\n';
-  L+='\nRe: Formal complaint and record of dealings, '+party+'\n\nTo whom it may concern:\n\n';
-  L+='I am writing to place on the record a formal complaint regarding my dealings with '+party+'. The record below is drawn from my documented interactions for '+span+', with screenshot evidence enclosed. I ask that this letter and its enclosures be made part of the file on my account or case.\n\n';
+  L+='\nRe: Formal complaint and record of dealings, '+pShow+'\n\nTo whom it may concern:\n\n';
+  L+='I am writing to place on the record a formal complaint regarding my dealings with '+pShow+'. The record below is drawn from my documented interactions for '+span+', with screenshot evidence enclosed. I ask that this letter and its enclosures be made part of the file on my account or case.\n\n';
   L+='RECORD OF DEALINGS\n\n'+(rec||'(Write the dated events here, or log them on the Log an event tab and draft again.)')+'\n\n';
   if($('l-extra').value.trim())L+=$('l-extra').value.trim()+'\n\n';
   L+='I request a written response within fifteen (15) days of the date of this letter. Nothing in this letter waives any right or remedy available under Virginia law.\n\nRespectfully,\n\nKevin Copeland\nKevin Copeland LLC\n\nEnclosures: '+(nShots?nShots+' screenshot'+(nShots===1?'':'s'):'as listed');
   $('l-body').value=L;
   $('oStatus2').textContent=rows.length?('Drafted from '+rows.length+' record'+(rows.length===1?'':'s')+' on the '+party+' file. Edit every line before it prints.'):'No records on file for that party yet. Write the events into the letter yourself, or log them first and draft again.';
 }
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 $('printBtn').onclick=()=>{
   if(!$('l-body').value.trim()){$('oStatus2').textContent='Draft the letter first.';return;}
   $('printSheet').textContent=$('l-body').value;
+  window.print();
+};
+$('packetBtn').onclick=async()=>{
+  if(!$('l-body').value.trim()){$('oStatus2').textContent='Draft the letter first.';return;}
+  const list=await allEntries();
+  const pv=$('l-party').value;
+  const party=pv==='__manual'?($('l-rname').value.trim()||''):pv;
+  const all=(list.filter(e=>e.party===party)).flatMap(e=>e.shots||[]);
+  if(!all.length){$('oStatus2').textContent='No screenshots on file for that case. Printing the letter alone.';}
+  $('printSheet').innerHTML=esc($('l-body').value)+all.map(s=>'<img src="'+s+'">').join('');
   window.print();
 };
 $('copyAddr').onclick=()=>{navigator.clipboard.writeText('Kevin Copeland LLC\n4870 Sadler Road, Ste 300\nGlen Allen, VA 23060');$('copyAddr').textContent='Copied';setTimeout(()=>$('copyAddr').textContent='Copy address',1500);};
