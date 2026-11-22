@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>THE PAPER TRAIL — Kevin Copeland LLC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#101F3B; --carolina:#56A6DC; --offwhite:#F5F2E9; --navy2:#1B2F55; --muted:#8FA5BC; --line:#2A3F63;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{font-family:'Montserrat',sans-serif; background:var(--offwhite); color:var(--navy); min-height:100vh;}
+.anton{font-family:'Anton',sans-serif; text-transform:uppercase; letter-spacing:.5px;}
+#gate{position:fixed; inset:0; background:var(--navy); display:flex; align-items:center; justify-content:center; z-index:50;}
+#gate .box{max-width:380px; width:92%; text-align:center; padding:34px 26px;}
+#gate h1{color:var(--offwhite); font-size:34px; line-height:1.05;}
+#gate .rule{width:64px; height:4px; background:var(--carolina); margin:14px auto 18px;}
+#gate p{color:var(--muted); font-size:13px; line-height:1.6; margin-bottom:18px;}
+#gate input{width:100%; padding:14px 16px; font-size:16px; border:2px solid var(--line); border-radius:8px; background:var(--navy2); color:var(--offwhite); text-align:center; letter-spacing:2px; margin-bottom:12px;}
+#gate input:focus{outline:none; border-color:var(--carolina);}
+#gate button{width:100%; padding:14px; font-size:14px; font-weight:800; background:var(--carolina); color:var(--navy); border:none; border-radius:8px; cursor:pointer; text-transform:uppercase; letter-spacing:1px;}
+#gate button:hover{filter:brightness(1.08);}
+#gate .err{color:#F2B8B5; font-size:12px; min-height:16px; margin-top:10px;}
+#gate .foot{color:#5C7290; font-size:10px; margin-top:22px; line-height:1.5;}
+header{background:var(--navy); color:var(--offwhite); padding:18px 20px 0;}
+.hrow{display:flex; align-items:center; justify-content:space-between; max-width:980px; margin:0 auto;}
+header h1{font-size:22px;}
+header h1 span{color:var(--carolina);}
+#lockBtn{background:none; border:1px solid var(--line); color:var(--muted); font-size:11px; padding:8px 12px; border-radius:6px; cursor:pointer; font-family:inherit; letter-spacing:1px;}
+#lockBtn:hover{color:var(--offwhite); border-color:var(--carolina);}
+nav{display:flex; gap:2px; max-width:980px; margin:14px auto 0; overflow-x:auto;}
+nav button{flex:1; min-width:90px; background:none; border:none; border-bottom:3px solid transparent; color:var(--muted); font-family:'Montserrat'; font-weight:600; font-size:12px; padding:10px 6px; cursor:pointer; text-transform:uppercase; letter-spacing:.5px; white-space:nowrap;}
+nav button.on{color:var(--offwhite); border-bottom-color:var(--carolina);}
+main{max-width:980px; margin:0 auto; padding:22px 16px 60px;}
+.view{display:none;} .view.on{display:block;}
+h2.sec{font-size:15px; margin:2px 0 12px;}
+.card{background:#fff; border:1px solid #E4E0D4; border-radius:10px; padding:16px; margin-bottom:14px;}
+label{display:block; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.6px; color:#5A6B80; margin:12px 0 5px;}
+label:first-child{margin-top:0;}
+input[type=text],input[type=date],select,textarea{width:100%; padding:11px 12px; font-size:15px; font-family:inherit; border:1.5px solid #C9D3DE; border-radius:8px; background:#FAFCFF; color:var(--navy);}
+textarea{min-height:90px; resize:vertical; line-height:1.5;}
+#l-body{min-height:340px; font-size:13.5px; line-height:1.7;}
+input:focus,select:focus,textarea:focus{outline:none; border-color:var(--carolina);}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
+.btn{display:inline-block; padding:13px 20px; font-size:13px; font-weight:800; background:var(--carolina); color:var(--navy); border:none; border-radius:8px; cursor:pointer; text-transform:uppercase; letter-spacing:1px; font-family:inherit;}
+.btn:hover{filter:brightness(1.07);}
+.btn.ghost{background:none; border:1.5px solid var(--carolina); color:#2F6E9E;}
+.btn.small{padding:8px 12px; font-size:11px;}
+#shotBox{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;}
+#shotBox img{height:86px; border-radius:6px; border:1px solid #C9D3DE; cursor:pointer;}
+.drop{border:2px dashed #B9C6D4; border-radius:10px; padding:18px; text-align:center; font-size:12px; color:#5A6B80; margin-top:6px; background:#FAFCFF;}
+.entry{background:#fff; border:1px solid #E4E0D4; border-radius:10px; padding:13px 14px; margin-bottom:10px;}
+.entry .top{display:flex; justify-content:space-between; align-items:baseline; gap:8px;}
+.entry .pf{font-weight:800; font-size:13px;}
+.entry .st{font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.6px; padding:3px 8px; border-radius:20px;}
+.entry .st.open{background:#FDF0E7; color:#B4622A;}
+.entry .st.closed{background:#EAF4EC; color:#3E7A4C;}
+.entry .meta{font-size:12px; color:#5A6B80; margin-top:4px; line-height:1.5;}
+.entry .sum{font-size:13px; margin-top:6px; line-height:1.55;}
+.entry .cap{font-size:11.5px; color:#42556B; margin-top:6px; background:#FAFCFF; border-left:3px solid var(--carolina); padding:8px 10px; white-space:pre-wrap; line-height:1.55; max-height:110px; overflow:auto;}
+.entry .shots{display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;}
+.entry .shots img{height:56px; border-radius:5px; cursor:pointer;}
+.entry .acts{margin-top:8px; display:flex; gap:8px;}
+table{width:100%; border-collapse:collapse; font-size:13px; background:#fff; border-radius:10px; overflow:hidden;}
+th{background:var(--navy); color:var(--offwhite); font-size:10px; text-transform:uppercase; letter-spacing:.7px; text-align:left; padding:10px 10px;}
+td{padding:9px 10px; border-bottom:1px solid #EEE9DC;}
+tr:last-child td{border-bottom:none;}
+.tblwrap{overflow-x:auto; border-radius:10px; border:1px solid #E4E0D4;}
+#lightbox{position:fixed; inset:0; background:rgba(6,12,24,.9); display:none; align-items:center; justify-content:center; z-index:80; cursor:zoom-out;}
+#lightbox img{max-width:96vw; max-height:92vh;}
+.note{font-size:11px; color:#5A6B80; line-height:1.6; margin-top:8px;}
+#oStatus{font-size:12px; color:#2F6E9E; min-height:16px; margin-top:6px;}
+.empty{font-size:13px; color:#5A6B80; padding:22px; text-align:center; background:#fff; border:1px dashed #C9D3DE; border-radius:10px;}
+.case h3{font-size:16px;}
+.case .cm{font-size:11.5px; color:#5A6B80; margin:4px 0 10px;}
+.case .crow{font-size:12.5px; padding:7px 0; border-top:1px solid #EEE9DC; line-height:1.5;}
+.case .crow b{font-weight:800;}
+.step{display:flex; gap:10px; padding:10px 0; border-top:1px solid #EEE9DC; font-size:13px; line-height:1.55;}
+.step:first-of-type{border-top:none;}
+.step .n{font-family:'Anton'; color:var(--carolina); font-size:16px; min-width:22px;}
+.lk{display:block; padding:12px 14px; border:1.5px solid #C9D3DE; border-radius:8px; margin-top:8px; text-decoration:none;}
+.lk b{font-size:13px; color:var(--navy); display:block;}
+.lk span{font-size:11.5px; color:#5A6B80;}
+.lk:hover{border-color:var(--carolina);}
+#printSheet{display:none; font-family:Georgia,serif; color:#111; font-size:12.5pt; line-height:1.6; max-width:7.5in; margin:0 auto; padding:.4in 0; white-space:pre-wrap;}
+@media print{
+  body{background:#fff;}
+  #gate,header,main,#lightbox{display:none !important;}
+  #printSheet{display:block !important; position:static; max-width:none; padding:0;}
+}
+@media(max-width:560px){ .row3{grid-template-columns:1fr 1fr;} header h1{font-size:18px;} }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="box">
+    <h1 class="anton">The Paper<br>Trail<span style="color:var(--carolina)">.</span></h1>
+    <div class="rule"></div>
+    <p id="gateMsg">Private Kevin Copeland LLC complaint file. Enter your passcode to open the records.</p>
+    <input id="pw1" type="password" inputmode="numeric" autocomplete="off" placeholder="Passcode">
+    <input id="pw2" type="password" inputmode="numeric" autocomplete="off" placeholder="Repeat passcode" style="display:none">
+    <button id="gateBtn">Unlock</button>
+    <div class="err" id="gateErr"></div>
+    <div class="foot">KEVIN COPELAND LLC · document. dispute. resolve.</div>
+  </div>
+</div>
+
+<div id="lightbox"><img id="lbImg" alt="screenshot enlarged"></div>
+
+<header>
+  <div class="hrow">
+    <h1 class="anton">The Paper Trail<span>.</span></h1>
+    <button id="lockBtn">Lock</button>
+  </div>
+  <nav>
+    <button data-v="log" class="on">Log an event</button>
+    <button data-v="cases">Cases</button>
+    <button data-v="all">All records</button>
+    <button data-v="letter">Letter</button>
+    <button data-v="mail">Mail room</button>
+  </nav>
+</header>
+
+<main>
+  <section class="view on" id="v-log">
+    <h2 class="sec anton">Log an event</h2>
+    <div class="card">
+      <div class="row2">
+        <div><label>Date</label><input type="date" id="f-date"></div>
+        <div><label>Who did you deal with</label><input type="text" id="f-party" placeholder="company, agency or person"></div>
+      </div>
+      <div class="row3">
+        <div><label>Category</label>
+          <select id="f-cat">
+            <option>Child support</option><option>Chat support</option><option>Collections</option>
+            <option>Billing</option><option>Service issue</option><option>Other</option>
+          </select>
+        </div>
+        <div><label>Channel</label>
+          <select id="f-channel">
+            <option>Chat</option><option>Phone</option><option>Email</option>
+            <option>Portal</option><option>Mail</option><option>In person</option>
+          </select>
+        </div>
+        <div><label>Status</label>
+          <select id="f-st"><option>Open</option><option>Closed</option></select>
+        </div>
+      </div>
+      <div class="row2">
+        <div><label>Who you spoke with</label><input type="text" id="f-who" placeholder="name or agent id, optional"></div>
+        <div><label>What you want resolved</label><input type="text" id="f-want" placeholder="the fix you are asking for"></div>
+      </div>
+      <label>What happened</label>
+      <textarea id="f-summary" placeholder="the short version, in your words"></textarea>
+      <label>Screenshots (load up what you were looking at)</label>
+      <input type="file" id="f-shots" accept="image/*" multiple style="display:none">
+      <div class="drop" id="drop">tap to add screenshots from your phone</div>
+      <div id="shotBox"></div>
+      <button class="btn ghost small" id="ocrBtn" style="margin-top:10px">Read text off the screenshots</button>
+      <div id="oStatus"></div>
+      <label>Captured text (editable — this is what the record says was on screen)</label>
+      <textarea id="f-text" placeholder="tap the button above, or type it in yourself"></textarea>
+      <div style="margin-top:14px; display:flex; gap:10px;">
+        <button class="btn" id="saveBtn">Save to the record</button>
+        <button class="btn ghost" id="clearBtn" style="display:none">Cancel edit</button>
+      </div>
+      <div class="note" id="editNote"></div>
+    </div>
+  </section>
+
+  <section class="view" id="v-cases">
+    <h2 class="sec anton">Cases — one file per company or agency</h2>
+    <div id="casesList"></div>
+  </section>
+
+  <section class="view" id="v-all">
+    <h2 class="sec anton">All records</h2>
+    <div class="card" style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="btn ghost small" id="csvBtn">Export CSV</button>
+      <button class="btn ghost small" id="jsonBtn">Backup JSON</button>
+      <span style="font-size:11px; color:#5A6B80; align-self:center;" id="countLbl"></span>
+    </div>
+    <div class="tblwrap"><table id="allTbl"><thead><tr><th>Date</th><th>Party</th><th>Category</th><th>Channel</th><th>Summary</th><th>Status</th><th></th></tr></thead><tbody></tbody></table></div>
+    <div class="note">Everything lives in this browser on this device, behind your passcode. Export a CSV or JSON backup now and then so the record is never trapped in one phone.</div>
+  </section>
+
+  <section class="view" id="v-letter">
+    <h2 class="sec anton">Build the complaint letter</h2>
+    <div class="card">
+      <div class="row2">
+        <div><label>Case</label><select id="l-party"></select></div>
+        <div><label>Send to, name</label><input type="text" id="l-rname" placeholder="company or office"></div>
+      </div>
+      <label>Send to, address</label>
+      <textarea id="l-raddr" style="min-height:70px" placeholder="street, city, state, zip"></textarea>
+      <label>Anything to add (a paragraph of your own, optional)</label>
+      <textarea id="l-extra" style="min-height:70px" placeholder="your words, dropped in before the closing"></textarea>
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn ghost small" id="genBtn">Draft the letter</button>
+        <button class="btn small" id="printBtn">Print / save as PDF</button>
+      </div>
+      <div id="oStatus2" style="font-size:12px; color:#2F6E9E; min-height:16px; margin-top:8px;"></div>
+      <label>The letter (edit every line before it prints)</label>
+      <textarea id="l-body"></textarea>
+    </div>
+  </section>
+
+  <section class="view" id="v-mail">
+    <h2 class="sec anton">Mail room</h2>
+    <div class="card">
+      <label style="margin-top:0">Getting it out by certified mail</label>
+      <div class="step"><span class="n">1</span><span>Print the letter from the Letter tab and sign it above your name.</span></div>
+      <div class="step"><span class="n">2</span><span>Print or copy your screenshots and anything else you are enclosing. Keep a full copy of the whole packet for your own file.</span></div>
+      <div class="step"><span class="n">3</span><span>At the post office, ask for Certified Mail with Return Receipt, so you get the green card or an electronic signature back as proof it landed and who signed for it.</span></div>
+      <div class="step"><span class="n">4</span><span>The clerk fills the certified slip with the recipient address, sticks it on the envelope, and hands you the receipt. Keep the receipt, it carries the tracking number.</span></div>
+      <div class="step"><span class="n">5</span><span>When the green card comes back, staple it to your copy of the letter. That pairing is your proof of service.</span></div>
+      <div class="step"><span class="n">6</span><span>Put the tracking number on the case here: edit the newest record for that party and drop it in the notes.</span></div>
+      <div class="note">Postage and the certified fee are paid at the counter. Nothing on this page charges you anything.</div>
+    </div>
+    <div class="card">
+      <label style="margin-top:0">Formal channels, one tap away</label>
+      <a class="lk" href="https://www.consumerfinance.gov/complaint/" target="_blank" rel="noopener"><b>File with the CFPB</b><span>consumerfinance.gov/complaint — the federal complaint route for financial companies</span></a>
+      <a class="lk" href="https://www.bbb.org/" target="_blank" rel="noopener"><b>File with the BBB</b><span>bbb.org — search the company, then file the complaint</span></a>
+      <a class="lk" href="https://mychildsupport.dss.virginia.gov/" target="_blank" rel="noopener"><b>Virginia DCSE, MyChildSupport</b><span>the state child support portal, for anything child support</span></a>
+      <a class="lk" href="https://www.usps.com/" target="_blank" rel="noopener"><b>USPS</b><span>usps.com — certified mail details, or just ask at the counter</span></a>
+    </div>
+    <div class="card">
+      <label style="margin-top:0">Your return address</label>
+      <div style="font-size:13px; line-height:1.6;">Kevin Copeland LLC<br>4870 Sadler Road, Ste 300<br>Glen Allen, VA 23060</div>
+      <button class="btn ghost small" id="copyAddr" style="margin-top:10px">Copy address</button>
+    </div>
+  </section>
+</main>
+
+<div id="printSheet"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+/* ---------- password gate ---------- */
+const LS_HASH='kcllc_paper_hash';
+async function sha(txt){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
+function unlocked(){return sessionStorage.getItem('pt_unlock')==='1';}
+let setting=false;
+function gateMode(){
+  const has=!!localStorage.getItem(LS_HASH); setting=!has;
+  document.getElementById('pw2').style.display=has?'none':'block';
+  document.getElementById('gateMsg').textContent=has
+    ?'Private Kevin Copeland LLC complaint file. Enter your passcode to open the records.'
+    :'First time here. Pick a passcode, you will use it every visit on this device.';
+  document.getElementById('gateBtn').textContent=has?'Unlock':'Set passcode';
+}
+document.getElementById('gateBtn').onclick=async()=>{
+  const a=document.getElementById('pw1').value, e=document.getElementById('gateErr');
+  if(!a){e.textContent='Type a passcode.';return;}
+  if(setting){
+    const b=document.getElementById('pw2').value;
+    if(a!==b){e.textContent='The two do not match. Try again.';return;}
+    localStorage.setItem(LS_HASH,await sha(a)); sessionStorage.setItem('pt_unlock','1'); enter();
+  }else{
+    if(await sha(a)===localStorage.getItem(LS_HASH)){sessionStorage.setItem('pt_unlock','1'); enter();}
+    else{e.textContent='That is not it. Try again.';}
+  }
+};
+document.getElementById('pw1').addEventListener('keydown',ev=>{if(ev.key==='Enter')document.getElementById('gateBtn').click();});
+document.getElementById('lockBtn').onclick=()=>{sessionStorage.removeItem('pt_unlock');location.reload();};
+function enter(){document.getElementById('gate').style.display='none'; boot();}
+
+/* ---------- tiny IndexedDB ---------- */
+let db;
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open('kcllc_paper_trail',1);
+ r.onupgradeneeded=()=>{r.result.createObjectStore('records',{keyPath:'id',autoIncrement:true});};
+ r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);});}
+function tx(mode){return db.transaction('records',mode).objectStore('records');}
+function putEntry(e){return new Promise((res,rej)=>{const q=tx('readwrite').put(e);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
+function delEntry(id){return new Promise(res=>{tx('readwrite').delete(id).onsuccess=()=>res();});}
+function allEntries(){return new Promise(res=>{const q=tx('readonly').getAll();q.onsuccess=()=>res(q.result||[]);});}
+
+/* ---------- state ---------- */
+let shots=[], editId=null;
+const $=id=>document.getElementById(id);
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fmtDay(s){const[y,m,d]=s.split('-');return new Date(y,m-1,d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));$('v-'+b.dataset.v).classList.add('on');
+  render();
+});
+
+/* ---------- screenshots ---------- */
+function shrink(file){return new Promise(res=>{const img=new Image();img.onload=()=>{
+ const M=1280,s=Math.min(1,M/Math.max(img.width,img.height)),c=document.createElement('canvas');
+ c.width=img.width*s;c.height=img.height*s;c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+ res(c.toDataURL('image/jpeg',.82));};img.src=URL.createObjectURL(file);});}
+$('drop').onclick=()=>$('f-shots').click();
+$('f-shots').onchange=async()=>{for(const f of [...$('f-shots').files]) shots.push(await shrink(f)); drawShots();$('f-shots').value='';};
+function drawShots(){$('shotBox').innerHTML='';shots.forEach((s,i)=>{const im=new Image();im.src=s;im.onclick=()=>zoom(s);$('shotBox').append(im);});}
+function zoom(s){$('lbImg').src=s;$('lightbox').style.display='flex';}
+$('lightbox').onclick=()=>$('lightbox').style.display='none';
+
+/* ---------- OCR: read the conversation text off every shot ---------- */
+function prep(src){return new Promise(res=>{const img=new Image();img.onload=()=>{
+  const M=1800;let s=M/Math.max(img.width,img.height);if(s>2)s=2;if(s<1)s=1;
+  const c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
+  const x=c.getContext('2d');x.drawImage(img,0,0,c.width,c.height);
+  const d=x.getImageData(0,0,c.width,c.height),p=d.data;
+  let mn=255,mx=0;
+  for(let i=0;i<p.length;i+=4){const g=(p[i]*.299+p[i+1]*.587+p[i+2]*.114)|0;p[i]=p[i+1]=p[i+2]=g;if(g<mn)mn=g;if(g>mx)mx=g;}
+  const span=Math.max(1,mx-mn);
+  for(let i=0;i<p.length;i+=4){const g=Math.max(0,Math.min(255,((p[i]-mn)*255/span)|0));p[i]=p[i+1]=p[i+2]=g;}
+  x.putImageData(d,0,0);
+  res(c.toDataURL('image/png'));
+};img.src=src;});}
+
+$('ocrBtn').onclick=async()=>{
+  if(!shots.length){$('oStatus').textContent='Add a screenshot first.';return;}
+  $('oStatus').textContent='Reading the screenshots…';
+  try{
+    let out=[];
+    try{
+      const w=await Tesseract.createWorker('eng');
+      await w.setParameters({tessedit_pageseg_mode:'6'});
+      for(const s of shots){const r=await w.recognize(await prep(s));out.push(r.data.text.split('\n').map(l=>l.trim()).filter(Boolean).join('\n'));}
+      await w.terminate();
+    }catch(e2){
+      for(const s of shots){const r=await Tesseract.recognize(await prep(s),'eng');out.push(r.data.text.split('\n').map(l=>l.trim()).filter(Boolean).join('\n'));}
+    }
+    $('f-text').value=out.map((t,i)=>'Screenshot '+(i+1)+':\n'+t).join('\n\n');
+    $('oStatus').textContent='Text captured below. Read it over and fix anything it got wrong, this is the record.';
+  }catch(e){$('oStatus').textContent='The read did not land. Type what was on screen into the box below.';}
+};
+
+/* ---------- save / edit ---------- */
+function resetForm(){['f-date','f-party','f-who','f-want','f-summary','f-text'].forEach(i=>$(i).value='');$('f-cat').selectedIndex=0;$('f-channel').selectedIndex=0;$('f-st').selectedIndex=0;shots=[];drawShots();editId=null;$('saveBtn').textContent='Save to the record';$('clearBtn').style.display='none';$('editNote').textContent='';$('oStatus').textContent='';}
+$('clearBtn').onclick=resetForm;
+$('saveBtn').onclick=async()=>{
+  const e={date:$('f-date').value||todayStr(),party:$('f-party').value.trim(),cat:$('f-cat').value,channel:$('f-channel').value,st:$('f-st').value,who:$('f-who').value.trim(),want:$('f-want').value.trim(),summary:$('f-summary').value.trim(),text:$('f-text').value.trim(),shots:shots,created:Date.now()};
+  if(!e.party){$('oStatus').textContent='Name who you dealt with.';return;}
+  if(!e.summary&&!e.text){$('oStatus').textContent='Give me at least a summary or the captured text.';return;}
+  if(editId)e.id=editId; else e.id=Date.now()+Math.floor(Math.random()*1000);
+  await putEntry(e); resetForm(); $('f-date').value=e.date; render();
+};
+
+/* ---------- views ---------- */
+function chipRow(e){return [e.cat,e.channel,e.who?('spoke with '+e.who):null].filter(Boolean).join(' · ');}
+function entryCard(e,showParty){
+  return '<div class="entry"><div class="top"><span class="pf">'+fmtDay(e.date)+(showParty?' · '+e.party:'')+'</span><span class="st '+(e.st==='Closed'?'closed':'open')+'">'+(e.st||'Open')+'</span></div>'+
+  '<div class="meta">'+chipRow(e)+'</div>'+
+  (e.summary?'<div class="sum">'+e.summary+'</div>':'')+
+  (e.want?'<div class="meta">Wants: '+e.want+'</div>':'')+
+  (e.text?'<div class="cap">'+e.text+'</div>':'')+
+  (e.shots&&e.shots.length?'<div class="shots">'+e.shots.map(s=>'<img src="'+s+'" onclick="zoom(this.src)">').join('')+'</div>':'')+
+  '<div class="acts"><button class="btn ghost small" onclick="editEntry('+e.id+')">Edit</button><button class="btn ghost small" onclick="killEntry('+e.id+')">Delete</button></div></div>';
+}
+function cases(list){
+  const groups={};
+  list.forEach(e=>{const k=(e.party||'').trim();(groups[k]=groups[k]||[]).push(e);});
+  return Object.entries(groups).sort((a,b)=>b[1].length-a[1].length).map(([p,rows])=>{
+    rows.sort((a,b)=>a.date.localeCompare(b.date));
+    const open=rows.filter(r=>r.st!=='Closed').length;
+    const span=rows.length>1?(fmtDay(rows[0].date)+' to '+fmtDay(rows[rows.length-1].date)):(fmtDay(rows[0].date));
+    return '<div class="card case"><h3 class="anton">'+p+'</h3><div class="cm">'+rows.length+' record'+(rows.length===1?'':'s')+' · '+span+' · '+open+' open</div>'+
+      rows.map(r=>'<div class="crow"><b>'+fmtDay(r.date)+'</b> ('+r.channel+') '+((r.summary||r.text||'').slice(0,110))+'</div>').join('')+
+      '<button class="btn ghost small" style="margin-top:10px" onclick="buildFor(\''+p.replace(/'/g,"\\'")+'\")">Build the letter for this case</button></div>';
+  }).join('')||'<div class="empty">No cases yet. The first event you log opens the first file.</div>';
+}
+async function editEntry(id){const list=await allEntries();const e=list.find(x=>x.id===id);if(!e)return;
+ editId=id;$('f-date').value=e.date;$('f-party').value=e.party;$('f-cat').value=e.cat;$('f-channel').value=e.channel;$('f-st').value=e.st||'Open';
+ $('f-who').value=e.who||'';$('f-want').value=e.want||'';$('f-summary').value=e.summary||'';$('f-text').value=e.text||'';
+ shots=(e.shots||[]).slice();drawShots();$('saveBtn').textContent='Save changes';$('clearBtn').style.display='inline-block';$('editNote').textContent='Editing a saved record. Save changes or cancel.';
+ document.querySelector('nav button[data-v=log]').click();}
+async function killEntry(id){if(!confirm('Delete this record? It comes off the case file with it.'))return;await delEntry(id);render();}
+window.editEntry=editEntry;window.killEntry=killEntry;window.zoom=zoom;window.buildFor=buildFor;
+
+/* ---------- letter ---------- */
+function fillPartySelect(list){
+  const sel=$('l-party');const cur=sel.value;
+  const parties=[...new Set(list.map(e=>e.party))];
+  sel.innerHTML='<option value="">Pick a case…</option>'+parties.map(p=>'<option>'+p+'</option>').join('')+'<option value="__manual">Manual, type it below</option>';
+  if(cur)sel.value=cur;
+}
+let letterPartyGo=null;
+async function buildFor(p){
+  letterPartyGo=p;
+  document.querySelector('nav button[data-v=letter]').click();
+  const sel=$('l-party');
+  [...sel.options].forEach(o=>{if(o.text===p)sel.value=o.value||o.text;});
+  genLetter();
+}
+$('l-party').onchange=()=>{if($('l-party').value&&$('l-party').value!=='__manual')genLetter();};
+$('genBtn').onclick=genLetter;
+async function genLetter(){
+  const list=await allEntries();
+  fillPartySelect(list);
+  const pv=$('l-party').value;
+  const party=pv==='__manual'?($('l-rname').value.trim()||'the recipient'):pv;
+  const rows=list.filter(e=>e.party===party).sort((a,b)=>a.date.localeCompare(b.date));
+  const rec=rows.map((r,i)=>{
+    let line=(i+1)+'. '+fmtDay(r.date)+' ('+r.channel+(r.who?', speaking with '+r.who:'')+') '+(r.summary||r.text||'').replace(/\s*\n\s*/g,' ').trim();
+    if(r.want)line+=' Resolution sought: '+r.want+'.';
+    return line;
+  }).join('\n\n');
+  const nShots=rows.reduce((n,r)=>n+((r.shots||[]).length),0);
+  const first=rows.length?fmtDay(rows[0].date):'', last=rows.length?fmtDay(rows[rows.length-1].date):'';
+  const span=rows.length>1?first+' through '+last:(first||'(date range)');
+  const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  let L='Kevin Copeland LLC\n4870 Sadler Road, Ste 300\nGlen Allen, VA 23060\n\n'+today+'\n\n';
+  if($('l-rname').value.trim())L+=$('l-rname').value.trim()+'\n';
+  if($('l-raddr').value.trim())L+=$('l-raddr').value.trim()+'\n';
+  L+='\nRe: Formal complaint and record of dealings, '+party+'\n\nTo whom it may concern:\n\n';
+  L+='I am writing to place on the record a formal complaint regarding my dealings with '+party+'. The record below is drawn from my documented interactions for '+span+', with screenshot evidence enclosed. I ask that this letter and its enclosures be made part of the file on my account or case.\n\n';
+  L+='RECORD OF DEALINGS\n\n'+(rec||'(Write the dated events here, or log them on the Log an event tab and draft again.)')+'\n\n';
+  if($('l-extra').value.trim())L+=$('l-extra').value.trim()+'\n\n';
+  L+='I request a written response within fifteen (15) days of the date of this letter. Nothing in this letter waives any right or remedy available under Virginia law.\n\nRespectfully,\n\nKevin Copeland\nKevin Copeland LLC\n\nEnclosures: '+(nShots?nShots+' screenshot'+(nShots===1?'':'s'):'as listed');
+  $('l-body').value=L;
+  $('oStatus2').textContent=rows.length?('Drafted from '+rows.length+' record'+(rows.length===1?'':'s')+' on the '+party+' file. Edit every line before it prints.'):'No records on file for that party yet. Write the events into the letter yourself, or log them first and draft again.';
+}
+$('printBtn').onclick=()=>{
+  if(!$('l-body').value.trim()){$('oStatus2').textContent='Draft the letter first.';return;}
+  $('printSheet').textContent=$('l-body').value;
+  window.print();
+};
+$('copyAddr').onclick=()=>{navigator.clipboard.writeText('Kevin Copeland LLC\n4870 Sadler Road, Ste 300\nGlen Allen, VA 23060');$('copyAddr').textContent='Copied';setTimeout(()=>$('copyAddr').textContent='Copy address',1500);};
+
+function render(){
+  if(!unlocked())return;
+  allEntries().then(list=>{
+    list.sort((a,b)=>b.date.localeCompare(a.date)||b.created-a.created);
+    $('casesList').innerHTML=cases(list);
+    fillPartySelect(list);
+    $('countLbl').textContent=list.length+' records on file';
+    const ab=$('allTbl').querySelector('tbody');ab.innerHTML='';
+    list.slice(0,200).forEach(e=>{const tr=document.createElement('tr');
+      tr.innerHTML='<td>'+e.date+'</td><td>'+e.party+'</td><td>'+e.cat+'</td><td>'+e.channel+'</td><td>'+((e.summary||e.text||'').slice(0,60))+'</td><td>'+(e.st||'Open')+'</td><td><button class="btn ghost small" onclick="editEntry('+e.id+')">Edit</button></td>';ab.append(tr);});
+    if(!list.length)ab.innerHTML='<tr><td colspan="7" style="color:#5A6B80">No records on file yet.</td></tr>';
+  });
+}
+
+/* ---------- export ---------- */
+function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type}));a.download=name;a.click();}
+$('csvBtn').onclick=async()=>{const list=await allEntries();list.sort((a,b)=>a.date.localeCompare(b.date));
+ let c='date,party,category,channel,contact,summary,resolution,captured_text,status\n';
+ list.forEach(e=>{const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  c+=[e.date,q(e.party),q(e.cat),q(e.channel),q(e.who),q(e.summary),q(e.want),q(e.text),q(e.st)].join(',')+'\n';});
+ dl('paper-trail-'+todayStr()+'.csv',c,'text/csv');};
+$('jsonBtn').onclick=async()=>{const list=await allEntries();dl('paper-trail-backup-'+todayStr()+'.json',JSON.stringify(list,null,1),'application/json');};
+
+/* ---------- boot ---------- */
+function boot(){$('f-date').value=todayStr();openDB().then(d=>{db=d;render();});}
+if(unlocked()){gateMode();enter();}else{gateMode();}
+</script>
+</body>
+</html>
