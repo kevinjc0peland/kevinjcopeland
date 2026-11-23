@@ -51,13 +51,13 @@ $('xSaveBtn').onclick=async()=>{
   if(amt==null){$('xStatus').textContent='Put the amount in first.';return;}
   const e={date:$('x-date').value||todayStr(),kind:xKind,type:$('x-type').value.trim(),amount:amt,notes:$('x-notes').value.trim(),shots:xShots,created:Date.now()};
   if(xEditId)e.id=xEditId; else e.id=Date.now()+Math.floor(Math.random()*1000);
-  await putExpense(e); resetXForm(); $('x-date').value=e.date; renderExpenses(); renderReports(); renderPayroll();
+  await putExpense(e); resetXForm(); $('x-date').value=e.date; renderExpenses(); renderReports(); renderPayroll(); renderWeek();
 };
 async function editExpense(id){const l=await allExpenses();const e=l.find(x=>x.id===id);if(!e)return;
  xEditId=id;setExpKindUI(e.kind);
  $('x-date').value=e.date;$('x-amt').value=e.amount;$('x-type').value=e.type||'';$('x-notes').value=e.notes||'';
  xShots=(e.shots||[]).slice();drawXShots();$('xSaveBtn').textContent='Save changes';$('xCancelBtn').style.display='inline-block';$('xEditNote').textContent='Editing a saved expense. Save changes or cancel.';}
-async function killExpense(id){if(!confirm('Delete this expense? The tallies come off with it.'))return;await delExpense(id);renderExpenses();renderReports();renderPayroll();}
+async function killExpense(id){if(!confirm('Delete this expense? The tallies come off with it.'))return;await delExpense(id);renderExpenses();renderReports();renderPayroll();renderWeek();}
 window.editExpense=editExpense;window.killExpense=killExpense;
 function expCard(e){
   return '<div class="entry"><div class="top"><span class="pf">'+(e.kind==='gas'?'Gas / energy':'Tax expense')+(e.type?' · '+e.type:'')+'</span><span class="amt">'+money(e.amount)+'</span></div>'+
@@ -135,6 +135,34 @@ function renderPayroll(){
  });
 }
 $('pDay').onchange=renderPayroll;
+
+/* ---------- WEEKLY TOTALS (tab injected between Today and Month) ---------- */
+async function renderWeek(){
+ const t=todayStr();const d=new Date(t+'T12:00:00');const sun=new Date(d);sun.setDate(d.getDate()-d.getDay());const sat=new Date(sun);sat.setDate(sun.getDate()+6);
+ const A=fmtD(sun),B=fmtD(sat);
+ const short=s=>new Date(s+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+ $('wkLabel').textContent=short(A)+' – '+short(B);
+ const rows=rangeFilter('week',await allEntries());
+ const s=sum(rows);
+ $('wkTot').innerHTML=totCard(money(s.earn),'earned this week')+totCard(s.miles.toFixed(1)+' mi','miles')+totCard(s.hrs.toFixed(1)+' h','hours')+totCard(s.jobs,'jobs');
+ $('wkBy').textContent=byLine(s.by)||'none';
+ const xl=rangeFilter('week',await allExpenses());
+ const gas=xl.filter(e=>e.kind==='gas').reduce((a,e)=>a+e.amount,0);
+ const tax=xl.filter(e=>e.kind==='tax').reduce((a,e)=>a+e.amount,0);
+ const spent=gas+tax;
+ $('wkExp').innerHTML=totCard(money(gas),'gas')+totCard(money(tax),'tax expenses')+totCard(money(spent),'all expenses')+totCard(money(s.earn-spent),'net this week');
+ $('wkNote').textContent='Net = earned minus every expense this week.';
+ $('wkList').innerHTML=rows.length?rows.map(e=>entryCard(e,true)).join(''):'<div class="empty">No jobs logged this week yet.</div>';
+}
+(function(){
+ const nb=document.createElement('button');nb.dataset.v='wk';nb.textContent='Week';
+ const nav=document.querySelector('nav');
+ nav.insertBefore(nb,nav.querySelector('[data-v="today"]').nextSibling);
+ const sec=document.createElement('section');sec.className='view';sec.id='v-wk';
+ sec.innerHTML='<h2 class="sec anton">This week — <span id="wkLabel"></span></h2><div class="tot" id="wkTot"></div><div class="card" style="font-size:12px; color:#5A6B80;">By platform: <b id="wkBy"></b></div><div class="tot" id="wkExp"></div><div class="card" style="font-size:12px; color:#5A6B80;" id="wkNote"></div><div id="wkList"></div>';
+ document.querySelector('main').insertBefore(sec,document.getElementById('v-month'));
+ nb.addEventListener('click',()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));nb.classList.add('on');document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));sec.classList.add('on');renderWeek();});
+})();
 
 /* ---------- boot ---------- */
 openXDB().then(d=>{xdb=d;$('x-date').value=todayStr();
