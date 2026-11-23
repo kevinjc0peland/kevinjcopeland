@@ -64,26 +64,29 @@ function drawShots(){$('shotBox').innerHTML='';shots.forEach((s,i)=>{const im=ne
 function zoom(s){$('lbImg').src=s;$('lightbox').style.display='flex';}
 $('lightbox').onclick=()=>$('lightbox').style.display='none';
 
-/* ---------- ZIP lookup (street + suite + city + state, business name as fallback) ---------- */
+/* ---------- ZIP lookup: street+city+state first (house number checked so a wrong street never fills), then the business name ---------- */
 $('zipBtn').onclick=async()=>{
   const street=$('f-addr').value.trim(), suite=$('f-suite').value.trim(), city=$('f-city').value.trim(), st=$('f-state').value, biz=$('f-biz').value.trim();
   if(!street&&!biz){$('oStatus').textContent='Put the street address in first — the zip comes from it.';return;}
+  const hn=(street.match(/^\s*(\d{1,6})/)||[])[1];
+  const okHouse=r=>{const a=r.address||{};if(!hn)return true;return String(a.house_number||'')===hn||(r.display_name||'').indexOf(hn+',')>=0||(r.display_name||'').indexOf(hn+' ')>=0;};
   const tries=[];
-  if(street){
-    let full=[street]; if(suite)full.push(suite); if(city)full.push(city); if(st)full.push(st);
-    tries.push(full.join(', '));
-    tries.push([street,city,st].filter(Boolean).join(', '));
-  }
-  if(biz) tries.push([biz,city,st].filter(Boolean).join(', '));
+  const add=(q,needHouse)=>{if(q&&!tries.some(t=>t.q===q))tries.push({q:q,hn:needHouse});};
+  if(street&&(city||st)) add([street,city,st].filter(Boolean).join(', '),true);
+  if(biz&&(city||st)) add([biz,city,st].filter(Boolean).join(', '),false);
+  if(street) add(street,true);
+  if(biz) add(biz,false);
   $('oStatus').textContent='Looking up the zip…';
   try{
     let zc=null;
-    for(const q of tries){
-      const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&countrycodes=us&q='+encodeURIComponent(q));
+    for(const t of tries){
+      const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=3&countrycodes=us&q='+encodeURIComponent(t.q));
       const j=await r.json();
-      if(j&&j[0]&&j[0].address&&j[0].address.postcode){zc=j[0].address.postcode;break;}
+      const hit=(j||[]).find(x=>x.address&&x.address.postcode&&(!t.hn||okHouse(x)));
+      if(hit){zc=hit.address.postcode;break;}
     }
     if(zc){$('f-zip').value=zc;$('f-zip').classList.add('filled');$('oStatus').textContent='Zip found: '+zc+' — give it a quick look to be sure.';}
+    else if(street&&!(city||st)) $('oStatus').textContent='No zip found on the street alone — add the city and state, then hit Find again.';
     else $('oStatus').textContent='No zip found for that one. Type it in.';
   }catch(e){$('oStatus').textContent='The zip lookup did not land. Type it in.';}
 };
