@@ -85,7 +85,7 @@ function fmtD(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0
 function rangeFilter(range,list){
  const t=todayStr(),y=t.slice(0,4),ym=t.slice(0,7);
  if(range==='day')return list.filter(e=>e.date===t);
- if(range==='week'){const d=new Date(t+'T12:00:00');const sun=new Date(d);sun.setDate(d.getDate()-d.getDay());const sat=new Date(sun);sat.setDate(sun.getDate()+6);
+ if(range==='week'){const d=new Date(t+'T12:00:00');const dow=(d.getDay()+6)%7;const sun=new Date(d);sun.setDate(d.getDate()-dow);const sat=new Date(sun);sat.setDate(sun.getDate()+6);
   return list.filter(e=>e.date>=fmtD(sun)&&e.date<=fmtD(sat));}
  if(range==='month')return list.filter(e=>e.date.startsWith(ym));
  if(range==='year')return list.filter(e=>e.date.startsWith(y));
@@ -138,7 +138,7 @@ $('pDay').onchange=renderPayroll;
 
 /* ---------- WEEKLY TOTALS (tab injected between Today and Month) ---------- */
 async function renderWeek(){
- const t=todayStr();const d=new Date(t+'T12:00:00');const sun=new Date(d);sun.setDate(d.getDate()-d.getDay());const sat=new Date(sun);sat.setDate(sun.getDate()+6);
+ const t=todayStr();const d=new Date(t+'T12:00:00');const dow=(d.getDay()+6)%7;const sun=new Date(d);sun.setDate(d.getDate()-dow);const sat=new Date(sun);sat.setDate(sun.getDate()+6);
  const A=fmtD(sun),B=fmtD(sat);
  const short=s=>new Date(s+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
  $('wkLabel').textContent=short(A)+' – '+short(B);
@@ -151,7 +151,7 @@ async function renderWeek(){
  const tax=xl.filter(e=>e.kind==='tax').reduce((a,e)=>a+e.amount,0);
  const spent=gas+tax;
  $('wkExp').innerHTML=totCard(money(gas),'gas')+totCard(money(tax),'tax expenses')+totCard(money(spent),'all expenses')+totCard(money(s.earn-spent),'net this week');
- $('wkNote').textContent='Net = earned minus every expense this week.';
+ $('wkNote').textContent='Net = earned minus every expense this week. Week runs Monday through Sunday.';
  $('wkList').innerHTML=rows.length?rows.map(e=>entryCard(e,true)).join(''):'<div class="empty">No jobs logged this week yet.</div>';
 }
 (function(){
