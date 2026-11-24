@@ -53,6 +53,11 @@ input.filled{border-color:var(--carolina); background:#EFF7FD;}
 .btn.ghost{background:none; border:1.5px solid var(--carolina); color:#2F6E9E;}
 .btn.small{padding:8px 12px; font-size:11px;}
 #zipBtn{padding:0 14px; white-space:nowrap;}
+#stopWrap{margin-top:4px;}
+#stopBox .stopblk{border:1px solid #C9D3DE; border-radius:10px; padding:12px 12px 6px; margin-top:10px; background:#FAFCFF;}
+#stopBox .stopHead{display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:#2F6E9E;}
+#stopBox .stopblk label{margin-top:8px;}
+.stopline{color:#2F6E9E;}
 #shotBox{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;}
 #shotBox img{height:86px; border-radius:6px; border:1px solid #C9D3DE; cursor:pointer;}
 .drop{border:2px dashed #B9C6D4; border-radius:10px; padding:18px; text-align:center; font-size:12px; color:#5A6B80; margin-top:6px; background:#FAFCFF;}
@@ -181,6 +186,11 @@ tr:last-child td{border-bottom:none;}
         <input type="text" id="f-zip" inputmode="numeric" maxlength="10" placeholder="don't know? tap Find">
         <button class="btn ghost small" id="zipBtn" type="button">Find</button>
       </div>
+      <div id="stopWrap">
+        <button class="btn ghost small" id="addStopBtn" type="button">+ add a stop (same run)</button>
+        <div id="stopBox"></div>
+        <div class="note">an extra stop on the same run counts as its own trip — earnings and miles optional per stop</div>
+      </div>
       <label>Notes</label>
       <input type="text" id="f-notes" placeholder="optional">
       <label>Screenshots (optional — upload what you're looking at)</label>
@@ -222,7 +232,7 @@ tr:last-child td{border-bottom:none;}
     <h2 class="sec anton">Year</h2>
     <div class="card"><input type="number" id="yPick" min="2024" max="2036" step="1"></div>
     <div class="tot" id="yearTot"></div>
-    <div class="tblwrap"><table id="yearTbl"><thead><tr><th>Month</th><th>Jobs</th><th>Earned</th><th>Miles</th><th>Hours</th></tr></thead><tbody></tbody></table></div>
+    <div class="tblwrap"><table id="yearTbl"><thead><tr><th>Month</th><th>Trips</th><th>Earned</th><th>Miles</th><th>Hours</th></tr></thead><tbody></tbody></table></div>
     <div class="card" style="font-size:12px; color:#5A6B80;">By platform: <b id="yearBy"></b></div>
   </section>
 
@@ -297,7 +307,7 @@ tr:last-child td{border-bottom:none;}
     </div>
     <div class="tot" id="repTot"></div>
     <h2 class="sec anton" style="margin-top:4px">By platform</h2>
-    <div class="tblwrap"><table id="repTbl"><thead><tr><th>Platform</th><th>Jobs</th><th>Earned</th><th>Miles</th><th>Hours</th></tr></thead><tbody></tbody></table></div>
+    <div class="tblwrap"><table id="repTbl"><thead><tr><th>Platform</th><th>Trips</th><th>Earned</th><th>Miles</th><th>Hours</th></tr></thead><tbody></tbody></table></div>
     <h2 class="sec anton" style="margin-top:16px">Expenses in the range</h2>
     <div class="tot" id="repExpTot"></div>
     <div id="repNote" class="note"></div>
