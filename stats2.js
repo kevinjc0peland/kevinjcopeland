@@ -112,24 +112,50 @@ async function renderReports(){
 }
 $('rRange').onchange=renderReports;$('rPf').onchange=renderReports;
 
-/* ---------- PAYROLL (end of day — 20–25% of net set aside) ---------- */
+/* ---------- PAYROLL: end of day, end of week, end of month ---------- */
+let payMode='day';
+function payIso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function payRange(mode,ds){const d=new Date(ds+'T12:00:00');
+ if(mode==='week'){const dow=(d.getDay()+6)%7;const a=new Date(d);a.setDate(d.getDate()-dow);const b=new Date(a);b.setDate(a.getDate()+6);return[payIso(a),payIso(b)];}
+ if(mode==='month')return[payIso(new Date(d.getFullYear(),d.getMonth(),1)),payIso(new Date(d.getFullYear(),d.getMonth()+1,0))];
+ return[ds,ds];}
+function payLabel(mode,a,b,ds){
+ if(mode==='week')return fmtDay(a)+' – '+fmtDay(b);
+ if(mode==='month')return new Date(ds+'T12:00:00').toLocaleDateString('en-US',{month:'long',year:'numeric'});
+ return fmtDay(ds);}
+(function injectPayMode(){
+ const sec=$('v-pay'); if(!sec) return;
+ const h=sec.querySelector('h2'); if(h) h.textContent='Payroll — day, week or month';
+ const wrap=document.createElement('div'); wrap.style.cssText='display:flex;gap:8px;margin:0 0 10px;';
+ const mk=(m,t)=>{const b=document.createElement('button');b.className='btn ghost small';b.dataset.m=m;b.textContent=t;
+  b.style.cssText='border-radius:999px;padding:6px 14px;';b.onclick=()=>{payMode=m;[...wrap.children].forEach(x=>{const on=x===b;x.style.background=on?'#101F3B':'#F5F2E9';x.style.color=on?'#F5F2E9':'#101F3B';x.style.fontWeight=on?'700':'400';});renderPayroll();};return b;};
+ ['day','week','month'].forEach((m,i)=>wrap.append(mk(m,['Day','Week','Month'][i])));
+ wrap.children[0].click(); // Day starts active
+ const dayCard=sec.querySelector('.card'); sec.insertBefore(wrap, dayCard);
+ const noteCard=[...sec.querySelectorAll('.card')].find(c=>c.querySelector('#copyPay'));
+ if(noteCard){const p=noteCard.querySelector('div[style*="12px"]');if(p)p.textContent="The period's numbers in one note";}
+})();
 function renderPayroll(){
  if(!$('pDay').value)$('pDay').value=todayStr();
  const d=$('pDay').value;
+ const [a,b]=payRange(payMode,d);
+ const when= payMode==='day'?'today': payMode==='week'?'this week':'this month';
+ const lbl=payLabel(payMode,a,b,d);
+ const gl=document.querySelectorAll('#v-pay .glabels span'); if(gl[1])gl[1].textContent="all of "+when+"'s take-home";
  allEntries().then(list=>{
- const jobs=list.filter(e=>e.date===d);
+ const jobs=list.filter(e=>e.date>=a&&e.date<=b);
  const s=sum(jobs);
  allExpenses().then(xl=>{
-  const xs=xl.filter(e=>e.date===d);
+  const xs=xl.filter(e=>e.date>=a&&e.date<=b);
   const spent=xs.reduce((a,e)=>a+e.amount,0);
   const net=s.earn-spent;
   $('payTot').innerHTML=totCard(money(s.earn),'earned')+totCard(money(spent),'expenses')+totCard(money(net),'take-home')+totCard(jobs.length,'trips');
   const lo=Math.max(net,0)*.20, hi=Math.max(net,0)*.25;
-  $('payBig').innerHTML=net>0?('Set aside <span>'+money(lo)+' – '+money(hi)+'</span> for payroll'):'<span>$0</span> for payroll today';
+  $('payBig').innerHTML=net>0?('Set aside <span>'+money(lo)+' – '+money(hi)+'</span> for payroll'):'<span>$0</span> for payroll '+when;
   $('payNote').textContent=net>0
-    ?('That is 20–25% of today\'s '+money(net)+' take-home (earned minus expenses). Drop it in the payroll account before a dollar of the rest moves.')
-    :('Today nets to '+money(net)+(xs.length?' after '+money(spent)+' in expenses':'')+'. Nothing goes to payroll on a day like this.');
-  $('copyPay').onclick=()=>{const txt='PAYROLL — '+fmtDay(d)+'\nEarned: '+money(s.earn)+'  Expenses: '+money(spent)+'  Take-home: '+money(net)+'\nTo payroll (20-25%): '+money(lo)+' - '+money(hi)+'\nTrips: '+jobs.length;
+    ?('That is 20–25% of '+when+"'s "+money(net)+' take-home (earned minus expenses) — '+lbl+'. Drop it in the payroll account before a dollar of the rest moves.')
+    :((when==='day'?'Today':when==='week'?'This week':'This month')+' nets to '+money(net)+(xs.length?' after '+money(spent)+' in expenses':'')+'. Nothing goes to payroll on a stretch like this.');
+  $('copyPay').onclick=()=>{const txt='PAYROLL — '+lbl+'\nEarned: '+money(s.earn)+'  Expenses: '+money(spent)+'  Take-home: '+money(net)+'\nTo payroll (20-25%): '+money(lo)+' - '+money(hi)+'\nTrips: '+jobs.length;
    navigator.clipboard.writeText(txt);$('copyPay').textContent='Copied';setTimeout(()=>$('copyPay').textContent='Copy payroll note',1500);};
  });
  });
