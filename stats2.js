@@ -97,7 +97,7 @@ async function renderReports(){
  let rows=rangeFilter(range,list);
  if(pf)rows=rows.filter(e=>e.platform===pf);
  const s=sum(rows);
- $('repTot').innerHTML=totCard(money(s.earn),'earned')+totCard(s.miles.toFixed(1)+' mi','miles')+totCard(s.hrs.toFixed(1)+' h','hours')+totCard(s.jobs,'jobs');
+ $('repTot').innerHTML=totCard(money(s.earn),'earned')+totCard(s.miles.toFixed(1)+' mi','miles')+totCard(s.hrs.toFixed(1)+' h','hours')+totCard(s.jobs,'trips');
  const byPf={};rows.forEach(e=>{(byPf[e.platform]=byPf[e.platform]||[]).push(e);});
  const tb=$('repTbl').querySelector('tbody');tb.innerHTML='';
  Object.keys(byPf).sort().forEach(k=>{const ss=sum(byPf[k]);const tr=document.createElement('tr');
@@ -123,13 +123,13 @@ function renderPayroll(){
   const xs=xl.filter(e=>e.date===d);
   const spent=xs.reduce((a,e)=>a+e.amount,0);
   const net=s.earn-spent;
-  $('payTot').innerHTML=totCard(money(s.earn),'earned')+totCard(money(spent),'expenses')+totCard(money(net),'take-home')+totCard(jobs.length,'jobs');
+  $('payTot').innerHTML=totCard(money(s.earn),'earned')+totCard(money(spent),'expenses')+totCard(money(net),'take-home')+totCard(jobs.length,'trips');
   const lo=Math.max(net,0)*.20, hi=Math.max(net,0)*.25;
   $('payBig').innerHTML=net>0?('Set aside <span>'+money(lo)+' – '+money(hi)+'</span> for payroll'):'<span>$0</span> for payroll today';
   $('payNote').textContent=net>0
     ?('That is 20–25% of today\'s '+money(net)+' take-home (earned minus expenses). Drop it in the payroll account before a dollar of the rest moves.')
     :('Today nets to '+money(net)+(xs.length?' after '+money(spent)+' in expenses':'')+'. Nothing goes to payroll on a day like this.');
-  $('copyPay').onclick=()=>{const txt='PAYROLL — '+fmtDay(d)+'\nEarned: '+money(s.earn)+'  Expenses: '+money(spent)+'  Take-home: '+money(net)+'\nTo payroll (20-25%): '+money(lo)+' - '+money(hi)+'\nJobs: '+jobs.length;
+  $('copyPay').onclick=()=>{const txt='PAYROLL — '+fmtDay(d)+'\nEarned: '+money(s.earn)+'  Expenses: '+money(spent)+'  Take-home: '+money(net)+'\nTo payroll (20-25%): '+money(lo)+' - '+money(hi)+'\nTrips: '+jobs.length;
    navigator.clipboard.writeText(txt);$('copyPay').textContent='Copied';setTimeout(()=>$('copyPay').textContent='Copy payroll note',1500);};
  });
  });
@@ -144,7 +144,7 @@ async function renderWeek(){
  $('wkLabel').textContent=short(A)+' – '+short(B);
  const rows=rangeFilter('week',await allEntries());
  const s=sum(rows);
- $('wkTot').innerHTML=totCard(money(s.earn),'earned this week')+totCard(s.miles.toFixed(1)+' mi','miles')+totCard(s.hrs.toFixed(1)+' h','hours')+totCard(s.jobs,'jobs');
+ $('wkTot').innerHTML=totCard(money(s.earn),'earned this week')+totCard(s.miles.toFixed(1)+' mi','miles')+totCard(s.hrs.toFixed(1)+' h','hours')+totCard(s.jobs,'trips');
  $('wkBy').textContent=byLine(s.by)||'none';
  const xl=rangeFilter('week',await allExpenses());
  const gas=xl.filter(e=>e.kind==='gas').reduce((a,e)=>a+e.amount,0);
@@ -152,7 +152,7 @@ async function renderWeek(){
  const spent=gas+tax;
  $('wkExp').innerHTML=totCard(money(gas),'gas')+totCard(money(tax),'tax expenses')+totCard(money(spent),'all expenses')+totCard(money(s.earn-spent),'net this week');
  $('wkNote').textContent='Net = earned minus every expense this week. Week runs Monday through Sunday.';
- $('wkList').innerHTML=rows.length?rows.map(e=>entryCard(e,true)).join(''):'<div class="empty">No jobs logged this week yet.</div>';
+ $('wkList').innerHTML=rows.length?rows.map(e=>entryCard(e,true)).join(''):'<div class="empty">No trips logged this week yet.</div>';
 }
 (function(){
  const nb=document.createElement('button');nb.dataset.v='wk';nb.textContent='Week';
