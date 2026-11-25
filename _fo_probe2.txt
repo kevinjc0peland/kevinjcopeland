@@ -1,0 +1,7 @@
+line1 "quoted"
+line2 \"escaped\"
+line3 \n backslash-n
+line4 => arrow
+line5 — em dash
+line6 <tag>
+line7 \\d regex
